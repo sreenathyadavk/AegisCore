@@ -7,8 +7,7 @@
 
 **AegisGate** is a next-generation AI-powered firewall designed to protect modern APIs from semantic attacks, abuse, and anomalies. Unlike traditional WAFs that rely on static regex rules, AegisGate understands the **intent** of a request using vector embeddings and LLM analysis.
 
-![Dashboard Preview](https://via.placeholder.com/800x400?text=Real-time+Threat+Dashboard) 
-*(Replace with actual screenshot of your dashboard)*
+
 
 ## 🚀 Key Features
 
