@@ -1,0 +1,18 @@
+# AegisGate API Route Configuration
+
+# Define groups of APIs to monitor and their upstream destinations.
+# All requests matching the 'prefix' will be forwarded to the 'upstream'.
+
+routes:
+  - name: "Main API"
+    prefix: "/api/v1"
+    upstream: "http://localhost:8080/"
+
+  # Example of Microservices:
+  # - name: "User Service"
+  #   prefix: "/users"
+  #   upstream: "http://user-service:3000"
+  
+  # - name: "Billing Service"
+  #   prefix: "/billing"
+  #   upstream: "http://billing-service:4000"

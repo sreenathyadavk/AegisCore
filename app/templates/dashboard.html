@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisGate Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+    <div class="container mx-auto p-6">
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+                AegisGate Firewall
+            </h1>
+            <div class="flex items-center gap-4">
+                <span id="status" class="px-3 py-1 bg-green-900 text-green-300 rounded-full text-sm">System Active</span>
+                <button onclick="fetchData()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded transition">Refresh</button>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="glass p-6 rounded-xl">
+                <h3 class="text-gray-400 text-sm mb-2">Total Requests</h3>
+                <p id="total-req" class="text-3xl font-bold">0</p>
+            </div>
+            <div class="glass p-6 rounded-xl">
+                <h3 class="text-gray-400 text-sm mb-2">Startups (Allowed)</h3>
+                <p id="allow-count" class="text-3xl font-bold text-green-400">0</p>
+            </div>
+            <div class="glass p-6 rounded-xl">
+                <h3 class="text-gray-400 text-sm mb-2">Threats Blocked</h3>
+                <p id="block-count" class="text-3xl font-bold text-red-500">0</p>
+            </div>
+            <div class="glass p-6 rounded-xl">
+                <h3 class="text-gray-400 text-sm mb-2">Avg Threat Score</h3>
+                <p id="avg-score" class="text-3xl font-bold text-yellow-400">0</p>
+            </div>
+        </div>
+
+        <!-- Recent Logs -->
+        <div class="glass p-6 rounded-xl overflow-hidden">
+            <h2 class="text-xl font-semibold mb-4">Recent Traffic</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-800 text-gray-400 uppercase text-xs">
+                        <tr>
+                            <th class="px-4 py-3">Time</th>
+                            <th class="px-4 py-3">IP</th>
+                            <th class="px-4 py-3">Method / Path</th>
+                            <th class="px-4 py-3">Decision</th>
+                            <th class="px-4 py-3">Score</th>
+                            <th class="px-4 py-3">Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-body" class="divide-y divide-gray-700">
+                        <!-- Rows injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // In production, this key should be managed securely (e.g., cookie auth)
+        const ADMIN_KEY = "change_this_to_a_secure_random_key_in_production";
+        const API_BASE = "/firewall/api/v1";
+
+        async function fetchData() {
+            try {
+                // Fetch Stats
+                const statsRes = await fetch(`${API_BASE}/stats`, { 
+                    headers: { "x-admin-key": ADMIN_KEY } 
+                });
+                const stats = await statsRes.json();
+                
+                document.getElementById('total-req').innerText = stats.total_requests;
+                document.getElementById('avg-score').innerText = Math.round(stats.avg_threat_score);
+                
+                const blocked = stats.decisions['BLOCK'] || 0;
+                const allowed = stats.decisions['ALLOW'] || 0;
+                document.getElementById('block-count').innerText = blocked;
+                document.getElementById('allow-count').innerText = allowed;
+
+                // Fetch Logs
+                const logsRes = await fetch(`${API_BASE}/logs?limit=20`, { 
+                    headers: { "x-admin-key": ADMIN_KEY } 
+                });
+                const logs = await logsRes.json();
+                
+                const tbody = document.getElementById('logs-body');
+                tbody.innerHTML = '';
+                
+                logs.forEach(log => {
+                    const row = document.createElement('tr');
+                    const color = log.decision === 'BLOCK' ? 'text-red-400' : 'text-green-400';
+                    const scoreColor = log.score > 50 ? 'text-red-400' : 'text-gray-300';
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-3 text-sm text-gray-400">${new Date(log.timestamp).toLocaleTimeString()}</td>
+                        <td class="px-4 py-3 text-sm font-mono">${log.ip}</td>
+                        <td class="px-4 py-3 text-sm"><span class="font-bold text-gray-300">${log.method}</span> ${log.request_path}</td>
+                        <td class="px-4 py-3 text-sm font-bold ${color}">${log.decision}</td>
+                        <td class="px-4 py-3 text-sm ${scoreColor}">${Math.round(log.score)}</td>
+                        <td class="px-4 py-3 text-sm text-gray-400">${log.reasons || '-'}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            }
+        }
+
+        // Init
+        fetchData();
+        // Poll every 5s
+        setInterval(fetchData, 5000);
+    </script>
+</body>
+</html>

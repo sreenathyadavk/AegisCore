@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisGate AI Firewall</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .gradient-bg {
+            background: linear-gradient(-45deg, #1e3a8a, #312e81, #1e40af, #6366f1);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body class="gradient-bg min-h-screen text-white font-sans">
+    <div class="container mx-auto px-6 py-12">
+        <!-- Header -->
+        <nav class="flex justify-between items-center mb-16">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center text-2xl">🛡️</div>
+                <h1 class="text-2xl font-bold">AegisGate</h1>
+            </div>
+            <a href="/dashboard"
+                class="px-6 py-2 bg-white text-blue-900 rounded-lg hover:bg-gray-100 transition font-semibold">
+                View Dashboard
+            </a>
+        </nav>
+
+        <!-- Hero Section -->
+        <div class="max-w-4xl mx-auto text-center mb-20">
+            <h2
+                class="text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-purple-300">
+                AI-Powered API Firewall
+            </h2>
+            <p class="text-xl text-blue-100 mb-8">
+                Stop semantic attacks before they reach your backend. Built with AI, optimized for modern APIs.
+            </p>
+            <div class="flex gap-4 justify-center">
+                <a href="/docs" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-semibold">
+                    API Documentation
+                </a>
+                <a href="https://github.com/yourusername/aegis-gate"
+                    class="px-8 py-3 glass hover:bg-white/10 rounded-lg transition font-semibold">
+                    View on GitHub
+                </a>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-20">
+            <div class="glass p-8 rounded-xl hover:bg-white/10 transition">
+                <div class="text-4xl mb-4">🧠</div>
+                <h3 class="text-xl font-bold mb-3">Semantic Detection</h3>
+                <p class="text-blue-100">Detects SQL injection and XSS using vector embeddings, not just regex.</p>
+            </div>
+            <div class="glass p-8 rounded-xl hover:bg-white/10 transition">
+                <div class="text-4xl mb-4">⚡</div>
+                <h3 class="text-xl font-bold mb-3">High Performance</h3>
+                <p class="text-blue-100">Built on FastAPI with async I/O. Adds <5ms latency on average.</p>
+            </div>
+            <div class="glass p-8 rounded-xl hover:bg-white/10 transition">
+                <div class="text-4xl mb-4">📊</div>
+                <h3 class="text-xl font-bold mb-3">Live Dashboard</h3>
+                <p class="text-blue-100">Real-time threat visualization with auto-refresh every 5 seconds.</p>
+            </div>
+            <div class="glass p-8 rounded-xl hover:bg-white/10 transition">
+                <div class="text-4xl mb-4">🚦</div>
+                <h3 class="text-xl font-bold mb-3">Rate Limiting</h3>
+                <p class="text-blue-100">Token bucket algorithm backed by Redis to stop DoS attacks.</p>
+            </div>
+            <div class="glass p-8 rounded-xl hover:bg-white/10 transition">
+                <div class="text-4xl mb-4">🛣️</div>
+                <h3 class="text-xl font-bold mb-3">Multi-API Routing</h3>
+                <p class="text-blue-100">Protect multiple microservices with a single firewall instance.</p>
+            </div>
+            <div class="glass p-8 rounded-xl hover:bg-white/10 transition">
+                <div class="text-4xl mb-4">🔍</div>
+                <h3 class="text-xl font-bold mb-3">Full Audit Logs</h3>
+                <p class="text-blue-100">Every decision logged to SQLite with complete metadata.</p>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="glass p-8 rounded-xl max-w-4xl mx-auto mb-12">
+            <div class="grid grid-cols-3 gap-8 text-center">
+                <div>
+                    <div class="text-4xl font-bold text-blue-300" id="total-blocked">-</div>
+                    <div class="text-sm text-blue-200 mt-2">Threats Blocked</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold text-green-300" id="total-allowed">-</div>
+                    <div class="text-sm text-blue-200 mt-2">Requests Allowed</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold text-yellow-300" id="avg-score">-</div>
+                    <div class="text-sm text-blue-200 mt-2">Avg Threat Score</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-blue-200 text-sm">
+            <p>Powered by FastAPI, Redis, and Sentence Transformers</p>
+        </div>
+    </div>
+
+    <script>
+        // Fetch stats from API
+        async function loadStats() {
+            try {
+                const headers = { "x-admin-key": "change_this_to_a_secure_random_key_in_production" };
+                const res = await fetch("/firewall/api/v1/stats", { headers });
+                const stats = await res.json();
+
+                document.getElementById('total-blocked').textContent = stats.decisions['BLOCK'] || 0;
+                document.getElementById('total-allowed').textContent = stats.decisions['ALLOW'] || 0;
+                document.getElementById('avg-score').textContent = Math.round(stats.avg_threat_score || 0);
+            } catch (err) {
+                console.error("Stats unavailable:", err);
+            }
+        }
+
+        loadStats();
+        setInterval(loadStats, 10000); // Refresh every 10s
+    </script>
+</body>
+
+</html>
